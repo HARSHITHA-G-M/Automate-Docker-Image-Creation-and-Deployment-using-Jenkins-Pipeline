@@ -2,33 +2,62 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = "localhost:5000/flaskapp"
+        IMAGE_NAME = "flaskapp"
+        REGISTRY = "localhost:5000"
+        TAG = "${REGISTRY}/${IMAGE_NAME}:latest"
     }
 
     stages {
-        stage('Clone Repo') {
+        stage('Start Local Docker Registry (if not running)') {
             steps {
-                git 'https://github.com/yourusername/project-4.git'
+                sh '''
+                    echo "🔍 Checking Docker registry..."
+                    RUNNING=$(docker ps --filter "name=registry" --filter "status=running" -q)
+                    if [ -z "$RUNNING" ]; then
+                        echo "🟡 Starting Docker registry..."
+                        docker run -d -p 5000:5000 --name registry registry:2 || docker start registry
+                    else
+                        echo "✅ Registry already running."
+                    fi
+                '''
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t $IMAGE_NAME .'
+                sh '''
+                    echo "🔧 Building image..."
+                    docker build -t ${IMAGE_NAME} .
+                '''
+            }
+        }
+
+        stage('Tag Docker Image') {
+            steps {
+                sh '''
+                    echo "🏷 Tagging image..."
+                    docker tag ${IMAGE_NAME} ${TAG}
+                '''
             }
         }
 
         stage('Push to Local Registry') {
             steps {
-                sh 'docker push $IMAGE_NAME'
+                sh '''
+                    echo "📤 Pushing image to local registry..."
+                    docker push ${TAG}
+                '''
             }
         }
 
         stage('Deploy (Optional)') {
+            when {
+                expression { return currentBuild.resultIsBetterOrEqualTo('SUCCESS') }
+            }
             steps {
-                sh 'docker run -d -p 5000:5000 --name flaskapp $IMAGE_NAME'
+                echo "🚀 Deployment logic goes here..."
             }
         }
     }
 }
-a
+

@@ -8,7 +8,7 @@ pipeline {
     stages {
         stage('Clone Repo') {
             steps {
-                git 'https://github.com/yourusername/project-4.git'
+                git 'https://github.com/HARSHITHA-G-M/Automate-Docker-Image-Creation-and-Deployment-using-Jenkins-Pipeline.git'
             }
         }
 

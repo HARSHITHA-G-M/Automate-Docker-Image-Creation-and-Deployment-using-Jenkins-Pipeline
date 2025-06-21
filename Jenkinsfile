@@ -20,7 +20,6 @@ pipeline {
                         echo "✅ Registry already running."
                     fi
                 '''
-=======
                 git 'https://github.com/HARSHITHA-G-M/Automate-Docker-Image-Creation-and-Deployment-using-Jenkins-Pipeline.git'
             }
         }
